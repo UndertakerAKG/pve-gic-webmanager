@@ -1,0 +1,18 @@
+Package: pve-gic-manager
+Version: 1.0.0
+Section: admin
+Priority: optional
+Architecture: all
+Depends: python3, systemd
+Maintainer: Phytium Virtualization Team <support@phytium.com.cn>
+Description: Proxmox VE ARM64 GIC Management Web and API Service
+ A dedicated web management interface and cluster API service for controlling
+ and diagnosing ARM64 QEMU GIC (Generic Interrupt Controller) versions on Proxmox VE 9.
+ .
+ Features:
+  - Port 8005: Proxmox VE 9 styled Web Management UI
+  - Port 8004: Inter-Node authenticated REST API
+  - GICv2 marked in Red, GICv3 marked in Green
+  - Node and VM real-time IP discovery
+  - Automatic cluster-wide VM synchronization
+  - Batch and single VM GIC version reconfiguration

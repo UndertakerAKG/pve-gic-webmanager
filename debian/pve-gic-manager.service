@@ -1,0 +1,18 @@
+[Unit]
+Description=Proxmox VE ARM64 GIC Management Service (Port 8004 API & 8005 Web)
+Documentation=https://pve.proxmox.com
+After=network.target pve-cluster.service
+Wants=pve-cluster.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/usr/share/pve-gic-manager
+ExecStart=/usr/bin/python3 -m pve_gic_manager.main
+Restart=always
+RestartSec=5s
+LimitNOFILE=65536
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

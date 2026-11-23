@@ -1,0 +1,2004 @@
+/* Proxmox VE 9.2.9 Dual Theme (Pixel-Perfect Dark & Light) Stylesheet */
+
+/* ==========================================================================
+   1. Theme Variables Definitions
+   ========================================================================== */
+
+/* Dark Theme (Based on official PVE 9 Dark Mode Screenshot) */
+:root, [data-theme="dark"] {
+    --pve-header-bg: #161616;
+    --pve-header-border: #2c2c2c;
+    --pve-header-title: #ffffff;
+    --pve-header-version: #aaaaaa;
+    --pve-tree-bg: #1e1e1e;
+    --pve-tree-header: #242424;
+    --pve-content-bg: #1a1a1a;
+    --pve-panel-bg: #222222;
+    --pve-card-bg: #262626;
+    --pve-border-color: #333333;
+    --pve-border-subtle: #282828;
+    --pve-text-light: #f5f5f5;
+    --pve-text-normal: #cccccc;
+    --pve-text-muted: #888888;
+    --pve-primary-orange: #e57000;
+    --pve-active-blue: #007acc;
+    --pve-hover-bg: #2d2d2d;
+    --pve-selected-bg: #094771;
+    --pve-table-header-bg: #262626;
+    --pve-table-header-text: #bbbbbb;
+    --pve-table-row: #1e1e1e;
+    --pve-table-row-alt: #222222;
+    --pve-table-cell-border: #262626;
+    --pve-input-bg: #1f1f1f;
+    --pve-input-border: #3c3c3c;
+    --pve-input-text: #ffffff;
+    --pve-btn-bg: #333333;
+    --pve-btn-border: #444444;
+    --pve-btn-text: #dddddd;
+    --pve-btn-hover: #3e3e3e;
+    --pve-bottom-bg: #181818;
+    --pve-bottom-header: #202020;
+    --pve-modal-bg: #2b2b2b;
+    --pve-modal-header-bg: #212121;
+    --pve-modal-text: #cccccc;
+    --pve-tag-default-bg: #383838;
+    --pve-tag-default-text: #cccccc;
+    --color-gicv2: #d9534f;
+    --color-gicv3: #28a745;
+}
+
+/* Light Theme (Strictly based on official PVE 9 Light Mode Screenshot) */
+[data-theme="light"] {
+    --pve-header-bg: #e6e8eb;
+    --pve-header-border: #d0d3d8;
+    --pve-header-title: #222222;
+    --pve-header-version: #555555;
+    --pve-tree-bg: #ffffff;
+    --pve-tree-header: #eaedf1;
+    --pve-content-bg: #ffffff;
+    --pve-panel-bg: #f5f6f8;
+    --pve-card-bg: #ffffff;
+    --pve-border-color: #d2d6dc;
+    --pve-border-subtle: #e5e7eb;
+    --pve-text-light: #111827;
+    --pve-text-normal: #374151;
+    --pve-text-muted: #6b7280;
+    --pve-primary-orange: #e57000;
+    --pve-active-blue: #007acc;
+    --pve-hover-bg: #edf3fc;
+    --pve-selected-bg: #cfe2ff;
+    --pve-table-header-bg: #edf0f5;
+    --pve-table-header-text: #374151;
+    --pve-table-row: #ffffff;
+    --pve-table-row-alt: #f9fafb;
+    --pve-table-cell-border: #e8eaed;
+    --pve-input-bg: #ffffff;
+    --pve-input-border: #c4c7cc;
+    --pve-input-text: #1f2937;
+    --pve-btn-bg: #f3f4f6;
+    --pve-btn-border: #d1d5db;
+    --pve-btn-text: #374151;
+    --pve-btn-hover: #e5e7eb;
+    --pve-bottom-bg: #ffffff;
+    --pve-bottom-header: #f0f2f5;
+    --pve-modal-bg: #ffffff;
+    --pve-modal-header-bg: #2b3643;
+    --pve-modal-text: #333333;
+    --pve-tag-default-bg: #e5e7eb;
+    --pve-tag-default-text: #4b5563;
+    --color-gicv2: #dc3545;
+    --color-gicv3: #28a745;
+}
+
+/* ==========================================================================
+   2. Global Reset and Layout
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    background-color: var(--pve-header-bg);
+    color: var(--pve-text-normal);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+/* ==========================================================================
+   3. Top Header Bar
+   ========================================================================== */
+.pve-top-header {
+    height: 38px;
+    background-color: var(--pve-header-bg);
+    border-bottom: 1px solid var(--pve-header-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex-shrink: 0;
+    z-index: 100;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.pve-brand-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.pve-brand-logo-svg {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.pve-brand-title {
+    color: var(--pve-header-title);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pve-version-tag {
+    color: var(--pve-header-version);
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pve-header-search {
+    position: static !important;
+    transform: none !important;
+    flex: 0 1 260px !important;
+    min-width: 120px !important;
+    max-width: 280px !important;
+    margin: 0 16px !important;
+    flex-shrink: 1 !important;
+}
+
+.pve-header-search input {
+    width: 100%;
+    height: 24px;
+    background-color: var(--pve-input-bg);
+    border: 1px solid var(--pve-input-border);
+    border-radius: 2px;
+    padding: 2px 10px;
+    color: var(--pve-input-text);
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.pve-header-search input:focus {
+    border-color: var(--pve-active-blue);
+}
+
+.pve-header-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.pve-api-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--pve-text-muted);
+    background-color: var(--pve-panel-bg);
+    padding: 3px 8px;
+    border-radius: 2px;
+    border: 1px solid var(--pve-border-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.status-dot-green {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    box-shadow: 0 0 5px #2ecc71;
+    flex-shrink: 0;
+}
+
+/* Header Action Buttons */
+.pve-header-btn {
+    background-color: var(--pve-btn-bg);
+    color: var(--pve-btn-text);
+    border: 1px solid var(--pve-btn-border);
+    border-radius: 2px;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pve-header-btn:hover {
+    background-color: var(--pve-btn-hover);
+}
+
+.btn-theme-toggle {
+    background-color: var(--pve-btn-bg);
+    color: var(--pve-btn-text);
+    font-weight: 500;
+}
+.btn-theme-toggle:hover {
+    border-color: var(--pve-active-blue);
+}
+
+.btn-sync-top {
+    background-color: #007acc;
+    border-color: #006bb3;
+    color: #ffffff;
+}
+.btn-sync-top:hover {
+    background-color: #0088e6;
+    color: #ffffff;
+}
+
+.pve-user-badge {
+    background-color: #262c33;
+    color: #ffffff;
+    font-size: 11.5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+[data-theme="dark"] .pve-user-badge {
+    background-color: #2b2b2b;
+    border: 1px solid #3c3c3c;
+    color: #ffffff;
+}
+
+.btn-logout {
+    cursor: pointer;
+    margin-left: 6px;
+    opacity: 0.8;
+}
+.btn-logout:hover {
+    opacity: 1;
+    color: #e74c3c;
+}
+
+/* ==========================================================================
+   4. Main Workspace Layout
+   ========================================================================== */
+.pve-layout-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Left Column: Server View Tree (Resizable) */
+.pve-col-tree {
+    width: 220px;
+    min-width: 160px;
+    max-width: 600px;
+    background-color: var(--pve-tree-bg);
+    border-right: 1px solid var(--pve-border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: background-color 0.15s;
+    overflow: hidden;
+}
+
+/* Vertical Splitter between Tree and Main Content */
+.pve-splitter-v {
+    width: 5px;
+    background-color: var(--pve-border-color);
+    cursor: col-resize;
+    flex-shrink: 0;
+    position: relative;
+    user-select: none;
+    z-index: 15;
+    transition: background-color 0.15s;
+}
+.pve-splitter-v:hover, .pve-splitter-v.dragging {
+    background-color: var(--pve-primary-orange);
+}
+.pve-splitter-v::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 1px;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 1px;
+}
+
+.tree-title-bar {
+    height: 28px;
+    background-color: var(--pve-tree-header);
+    border-bottom: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    font-size: 11px;
+    color: var(--pve-text-light);
+    font-weight: 600;
+}
+
+.tree-gear-btn {
+    cursor: pointer;
+    color: var(--pve-text-muted);
+    font-size: 13px;
+}
+.tree-gear-btn:hover {
+    color: var(--pve-text-light);
+}
+
+.pve-tree-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 0;
+}
+
+.pve-tree-item {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--pve-text-normal);
+    white-space: nowrap;
+}
+
+.pve-tree-item:hover {
+    background-color: var(--pve-hover-bg);
+}
+
+.pve-tree-item.active {
+    background-color: var(--pve-selected-bg);
+    color: var(--pve-text-light);
+    font-weight: 600;
+}
+
+[data-theme="light"] .pve-tree-item.active {
+    color: #0b5ed7;
+    background-color: #c2ddf2;
+}
+
+[data-theme="dark"] .pve-tree-item.active {
+    background-color: #384c5a;
+}
+
+.tree-expander {
+    width: 14px;
+    height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--pve-text-muted);
+    margin-right: 2px;
+    flex-shrink: 0;
+}
+
+.tree-leaf-spacer {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 2px;
+    flex-shrink: 0;
+}
+
+/* Official PVE ExtJS FontAwesome Tree Icons */
+.x-tree-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    text-align: center;
+    position: relative;
+    vertical-align: middle;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.x-tree-icon-custom {
+    color: #555555;
+    font-size: 14px;
+}
+
+[data-theme="dark"] .x-tree-icon-custom {
+    color: #e6e6e6;
+}
+
+/* Running VM icon */
+.x-tree-icon-custom.running {
+    color: #000000;
+}
+[data-theme="dark"] .x-tree-icon-custom.running {
+    color: #ffffff;
+}
+
+/* Stopped VM icon (greyed out monitor) */
+.x-tree-icon-custom.stopped,
+.x-tree-icon-custom.offline {
+    color: #b0b0b0 !important;
+}
+[data-theme="dark"] .x-tree-icon-custom.stopped,
+[data-theme="dark"] .x-tree-icon-custom.offline {
+    color: #666666 !important;
+}
+
+/* Small badge indicator on bottom right of the icon */
+.x-tree-icon-custom:after {
+    position: absolute;
+    right: -4px;
+    bottom: -2px;
+    font-size: 9px;
+    line-height: 1;
+    font-family: 'FontAwesome';
+    text-shadow: -1px 0px 2px #ffffff;
+    content: "";
+}
+
+[data-theme="dark"] .x-tree-icon-custom:after {
+    text-shadow: -1px 0px 2px #262626;
+}
+
+/* Running VM: green play badge (\f04b) */
+.x-tree-icon-custom.running:after {
+    content: "\f04b";
+    color: #21bf4b;
+}
+
+/* Online Node: green checkmark circle badge (\f058) */
+.x-tree-icon-custom.online:after {
+    content: "\f058";
+    color: #21bf4b;
+}
+
+/* Tree GIC tag (circular dot like PVE tags) */
+.pve-tree-tag {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+.pve-tree-tag.gic2-tag {
+    background-color: #dc3545;
+    box-shadow: 0 0 2px rgba(220, 53, 69, 0.7);
+}
+.pve-tree-tag.gic3-tag {
+    background-color: #28a745;
+    box-shadow: 0 0 2px rgba(40, 167, 69, 0.7);
+}
+
+.tree-level-0 { padding-left: 6px; }
+.tree-level-1 { padding-left: 18px; font-weight: 600; }
+.tree-level-2 { padding-left: 32px; font-size: 11.5px; }
+
+/* Right Column: Main Working Area */
+.pve-col-main {
+    flex: 1;
+    background-color: var(--pve-content-bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background-color 0.15s;
+}
+
+/* Breadcrumb Navigation Bar */
+.pve-main-breadcrumb-bar {
+    height: 32px;
+    background-color: var(--pve-panel-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex-shrink: 0;
+}
+
+.pve-breadcrumb-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--pve-text-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumb-link {
+    cursor: pointer;
+    color: var(--pve-active-blue);
+    text-decoration: none;
+    transition: color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.breadcrumb-link:hover {
+    text-decoration: underline;
+    color: var(--pve-primary-orange);
+}
+
+.breadcrumb-current {
+    font-weight: 600;
+    color: var(--pve-text-light);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pve-breadcrumb-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Summary Overview Cards */
+.pve-info-header {
+    background-color: var(--pve-panel-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    padding: 8px 12px;
+    flex-shrink: 0;
+}
+
+.pve-info-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.info-card {
+    background-color: var(--pve-card-bg);
+    border: 1px solid var(--pve-border-color);
+    border-radius: 2px;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.info-card-label {
+    font-size: 11px;
+    color: var(--pve-text-muted);
+}
+
+.info-card-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--pve-text-light);
+}
+
+.card-gicv3 .info-card-val {
+    color: #28a745;
+}
+
+.card-gicv2 .info-card-val {
+    color: #dc3545;
+}
+
+/* Action Toolbar */
+.pve-action-toolbar {
+    min-height: 36px;
+    background-color: var(--pve-panel-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+}
+
+.pve-action-toolbar::-webkit-scrollbar {
+    height: 4px;
+}
+.pve-action-toolbar::-webkit-scrollbar-thumb {
+    background-color: var(--pve-border-color);
+    border-radius: 2px;
+}
+
+.pve-btn {
+    height: 24px;
+    background-color: var(--pve-btn-bg);
+    border: 1px solid var(--pve-btn-border);
+    border-radius: 2px;
+    color: var(--pve-btn-text);
+    padding: 0 8px;
+    font-size: 11.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: background 0.1s, border-color 0.1s;
+}
+
+.pve-btn:hover {
+    background-color: var(--pve-btn-hover);
+}
+
+.pve-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.pve-btn-primary {
+    background-color: #007acc;
+    border-color: #006bb3;
+    color: #ffffff;
+}
+.pve-btn-primary:hover {
+    background-color: #0088e6;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Scheme 1: Integrated Segmented Button Group (连体胶囊分段按钮组)
+   - Encapsulates GICv3 and GICv2 into a single unified physical frame
+   - Outer container strictly enforces height: 24px, border-radius: 2px, unified border
+   - Inner buttons have border: none, height: 100%, perfectly sharing vertical space
+   - Middle divider is an exact 1px vertical hairline
+   - Completely eradicates any possibility of optical or physical misalignment
+   ========================================================================== */
+.pve-btn-group {
+    display: inline-flex !important;
+    align-items: stretch !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    box-sizing: border-box !important;
+    border-radius: 2px !important;
+    border: 1px solid var(--pve-btn-border) !important;
+    background-color: var(--pve-btn-bg) !important;
+    overflow: hidden !important;
+    vertical-align: middle !important;
+    align-self: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .pve-btn-group {
+    border: 1px solid #3c3c3c !important;
+    background-color: #2a2a2a !important;
+}
+
+[data-theme="light"] .pve-btn-group {
+    border: 1px solid #c8ccd3 !important;
+    background-color: #f3f4f6 !important;
+}
+
+/* Hairline Divider Between the Two Segments */
+.pve-btn-group-divider {
+    width: 1px !important;
+    min-width: 1px !important;
+    max-width: 1px !important;
+    height: 100% !important;
+    background-color: var(--pve-border-color) !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+[data-theme="dark"] .pve-btn-group-divider {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="light"] .pve-btn-group-divider {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Segmented Button Elements */
+.pve-btn-segmented,
+#btn-batch-gic3,
+#btn-batch-gic2 {
+    width: 148px !important;
+    min-width: 148px !important;
+    max-width: 148px !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    font-family: inherit !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    gap: 6px !important;
+    transition: background 0.12s ease, color 0.12s ease !important;
+}
+
+#btn-batch-gic3 .btn-icon,
+#btn-batch-gic2 .btn-icon {
+    width: 14px !important;
+    height: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#btn-batch-gic3 .btn-icon i,
+#btn-batch-gic2 .btn-icon i {
+    width: 14px !important;
+    height: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    font-size: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+#btn-batch-gic3 .btn-icon i.fa-check {
+    position: relative !important;
+    top: -0.5px !important;
+}
+
+#btn-batch-gic3 .btn-text,
+#btn-batch-gic2 .btn-text {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 14px !important;
+    line-height: 14px !important;
+    font-size: 12px !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+/* Disabled State inside the Segmented Group */
+#btn-batch-gic3:disabled,
+#btn-batch-gic2:disabled {
+    background: transparent !important;
+    color: var(--pve-text-muted) !important;
+    opacity: 0.55 !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+}
+
+#btn-batch-gic3:disabled .btn-icon i {
+    color: #28a745 !important;
+    opacity: 0.7 !important;
+}
+
+#btn-batch-gic2:disabled .btn-icon i {
+    color: #dc3545 !important;
+    opacity: 0.7 !important;
+}
+
+/* Enabled State inside the Segmented Group:
+   PVE Official Neutral Background (Completely eliminates Chromostereopsis & Helmholtz illusions)
+   Both segments share the EXACT SAME neutral background and text color;
+   Only the icons carry the distinctive status green and status red!
+*/
+#btn-batch-gic3:not(:disabled),
+#btn-batch-gic2:not(:disabled) {
+    background-color: var(--pve-btn-bg) !important;
+    color: var(--pve-text-light) !important;
+    opacity: 1 !important;
+}
+
+[data-theme="dark"] #btn-batch-gic3:not(:disabled),
+[data-theme="dark"] #btn-batch-gic2:not(:disabled) {
+    background-color: #2c2c2c !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="light"] #btn-batch-gic3:not(:disabled),
+[data-theme="light"] #btn-batch-gic2:not(:disabled) {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* Distinctive Vivid Status Icons */
+#btn-batch-gic3:not(:disabled) .btn-icon i {
+    color: #2ecc71 !important;
+    filter: drop-shadow(0 0 1px rgba(46, 204, 113, 0.5));
+}
+
+#btn-batch-gic2:not(:disabled) .btn-icon i {
+    color: #e74c3c !important;
+    filter: drop-shadow(0 0 1px rgba(231, 76, 60, 0.5));
+}
+
+/* Subtle Interactive Hover */
+[data-theme="dark"] #btn-batch-gic3:not(:disabled):hover {
+    background-color: rgba(46, 204, 113, 0.12) !important;
+}
+[data-theme="dark"] #btn-batch-gic2:not(:disabled):hover {
+    background-color: rgba(231, 76, 60, 0.12) !important;
+}
+
+[data-theme="light"] #btn-batch-gic3:not(:disabled):hover {
+    background-color: rgba(46, 204, 113, 0.1) !important;
+}
+[data-theme="light"] #btn-batch-gic2:not(:disabled):hover {
+    background-color: rgba(231, 76, 60, 0.1) !important;
+}
+
+/* Table Row Action Buttons: strictly identical compact size (48px) */
+.pve-btn-power {
+    height: 22px !important;
+    font-size: 11px !important;
+    padding: 0 5px !important;
+    margin: 0 1px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.pve-btn-power i {
+    width: 12px;
+    display: inline-block;
+    text-align: center;
+    margin-right: 3px;
+    flex-shrink: 0;
+}
+
+/* Toolbar Batch Power Buttons: strictly identical 96px width */
+#btn-batch-power-start,
+#btn-batch-power-shutdown,
+#btn-batch-power-stop,
+#btn-batch-power-reboot {
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 24px !important;
+    line-height: 22px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0 4px !important;
+}
+
+#btn-batch-power-start i,
+#btn-batch-power-shutdown i,
+#btn-batch-power-stop i,
+#btn-batch-power-reboot i {
+    width: 13px;
+    display: inline-block;
+    text-align: center;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+#btn-batch-power-start:hover:not(:disabled),
+.pve-btn-power-start:hover:not(:disabled) {
+    background-color: #1e7e34;
+    border-color: #19692c;
+    color: #ffffff;
+}
+
+#btn-batch-power-shutdown:hover:not(:disabled),
+.pve-btn-power-shutdown:hover:not(:disabled) {
+    background-color: #bd2130;
+    border-color: #b21f2d;
+    color: #ffffff;
+}
+
+#btn-batch-power-stop:hover:not(:disabled),
+.pve-btn-power-stop:hover:not(:disabled) {
+    background-color: #d35400;
+    border-color: #ba4a00;
+    color: #ffffff;
+}
+
+#btn-batch-power-reboot:hover:not(:disabled),
+.pve-btn-power-reboot:hover:not(:disabled) {
+    background-color: #007acc;
+    border-color: #006bb3;
+    color: #ffffff;
+}
+
+.pve-toolbar-sep {
+    width: 1px;
+    height: 16px;
+    background-color: var(--pve-border-color);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+.pve-search-box {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.pve-search-box label {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pve-search-box input {
+    height: 22px;
+    background-color: var(--pve-input-bg);
+    border: 1px solid var(--pve-input-border);
+    border-radius: 2px;
+    color: var(--pve-input-text);
+    padding: 0 8px;
+    font-size: 11px;
+    outline: none;
+    width: 190px;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+
+.pve-search-box input:focus {
+    border-color: var(--pve-active-blue);
+}
+
+/* Toast Sync Notification */
+.pve-sync-toast {
+    background-color: #007acc;
+    color: #ffffff;
+    padding: 4px 12px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #005a9e;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   5. Data Grid Table
+   ========================================================================== */
+.pve-grid-wrapper {
+    flex: 1 1 0%;
+    overflow: auto;
+    background-color: var(--pve-content-bg);
+    min-height: 120px;
+    position: relative;
+    scrollbar-width: thin;
+}
+
+.pve-grid-table {
+    width: 100%;
+    min-width: 990px;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left;
+    table-layout: fixed;
+}
+
+.pve-grid-table th {
+    background-color: var(--pve-table-header-bg);
+    color: var(--pve-table-header-text);
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--pve-border-color);
+    border-right: 1px solid var(--pve-border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.pve-grid-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--pve-table-cell-border);
+    border-right: 1px solid var(--pve-table-cell-border);
+    white-space: nowrap;
+    color: var(--pve-text-normal);
+}
+
+.pve-grid-table th:last-child,
+.pve-grid-table td:last-child {
+    padding-right: 14px !important;
+}
+
+.pve-grid-table tr:nth-child(even) {
+    background-color: var(--pve-table-row);
+}
+.pve-grid-table tr:nth-child(odd) {
+    background-color: var(--pve-table-row-alt);
+}
+
+.pve-grid-table tr:hover {
+    background-color: var(--pve-hover-bg);
+}
+
+.pve-grid-table tr.selected {
+    background-color: var(--pve-selected-bg);
+    color: var(--pve-text-light);
+}
+
+/* Status Indicator Dots */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+.status-indicator.running {
+    background-color: #28a745;
+    box-shadow: 0 0 4px #28a745;
+}
+.status-indicator.stopped {
+    background-color: #888888;
+}
+
+/* Requirement 2: GICv2 Red, GICv3 Green (Length Strictly Identical!) */
+/* Requirement 3: Stopped VMs also marked in Red and Green! */
+.pve-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;           /* 严格固定等宽！保证GICv2与GICv3长度绝对一致！ */
+    height: 20px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.tag-gicv2 {
+    background-color: var(--color-gicv2);
+    color: #ffffff;
+}
+
+.tag-gicv3 {
+    background-color: var(--color-gicv3);
+    color: #ffffff;
+}
+
+.tag-gic-default {
+    background-color: var(--pve-tag-default-bg);
+    color: var(--pve-tag-default-text);
+    border: 1px solid var(--pve-border-color);
+}
+
+.tag-pending {
+    background-color: #d39e00;
+    color: #ffffff;
+    font-size: 10px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    border-radius: 2px;
+}
+
+/* Horizontal Resizable Splitter between Grid and Console */
+.pve-splitter-h {
+    height: 5px;
+    background-color: var(--pve-border-color);
+    cursor: row-resize;
+    flex-shrink: 0;
+    position: relative;
+    user-select: none;
+    z-index: 15;
+    transition: background-color 0.15s;
+}
+.pve-splitter-h:hover, .pve-splitter-h.dragging {
+    background-color: var(--pve-primary-orange);
+}
+.pve-splitter-h::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 1px;
+    transform: translateX(-50%);
+    height: 3px;
+    width: 36px;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 1px;
+}
+
+/* ==========================================================================
+   6. Bottom Task Console Drawer (Resizable & Collapsible)
+   ========================================================================== */
+.pve-bottom-console {
+    height: 140px;
+    min-height: 26px;
+    max-height: 500px;
+    background-color: var(--pve-bottom-bg);
+    border-top: 1px solid var(--pve-border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.15s;
+}
+
+.console-toggle-btn {
+    margin-left: auto;
+    margin-right: 8px;
+    background: transparent;
+    border: none;
+    color: var(--pve-text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 2px;
+}
+.console-toggle-btn:hover {
+    color: var(--pve-text-light);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.console-tabs {
+    height: 24px;
+    background-color: var(--pve-bottom-header);
+    border-bottom: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+}
+
+.console-tab {
+    height: 24px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    color: #ffffff;
+    background-color: var(--pve-active-blue);
+    font-weight: 600;
+    cursor: default;
+}
+
+.console-body {
+    flex: 1;
+    overflow-y: auto;
+    font-family: Consolas, monospace;
+    font-size: 11px;
+}
+
+.console-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.console-table th {
+    background-color: var(--pve-panel-bg);
+    color: var(--pve-text-muted);
+    text-align: left;
+    padding: 3px 8px;
+    font-weight: normal;
+    border-bottom: 1px solid var(--pve-border-color);
+}
+
+.console-table td {
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--pve-border-color);
+    color: var(--pve-text-normal);
+}
+
+.console-watermark {
+    position: absolute;
+    right: 20px;
+    bottom: 8px;
+    width: 42px;
+    height: 42px;
+    opacity: 0.12;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   7. Official PVE Login Window (Requirement 4)
+   ========================================================================== */
+.pve-login-mask {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+}
+
+.pve-login-window {
+    width: 420px;
+    background-color: var(--pve-modal-bg);
+    border: 1px solid var(--pve-border-color);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.login-header-bar {
+    height: 38px;
+    background-color: var(--pve-modal-header-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    gap: 8px;
+}
+
+.login-content-area {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    color: var(--pve-modal-text);
+}
+
+.login-form-row {
+    display: flex;
+    align-items: center;
+}
+
+.login-form-row label {
+    width: 90px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pve-text-light);
+}
+
+.login-form-row input, .login-form-row select {
+    flex: 1;
+    height: 28px;
+    background-color: var(--pve-input-bg);
+    border: 1px solid var(--pve-input-border);
+    border-radius: 2px;
+    color: var(--pve-input-text);
+    padding: 0 8px;
+    font-size: 12px;
+    outline: none;
+}
+
+.login-form-row input:focus, .login-form-row select:focus {
+    border-color: var(--pve-active-blue);
+}
+
+.login-error-msg {
+    color: #e74c3c;
+    font-size: 11.5px;
+    text-align: center;
+    min-height: 16px;
+}
+
+.login-footer-bar {
+    height: 44px;
+    background-color: var(--pve-panel-bg);
+    border-top: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 16px;
+}
+
+.btn-login-submit {
+    height: 28px;
+    padding: 0 20px;
+    background-color: #007acc;
+    color: #ffffff;
+    border: 1px solid #006bb3;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+}
+.btn-login-submit:hover {
+    background-color: #0088e6;
+}
+
+/* ==========================================================================
+   8. Configuration Modal Window
+   ========================================================================== */
+.pve-modal-mask {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.pve-modal-window {
+    width: 480px;
+    background-color: var(--pve-modal-bg);
+    border: 1px solid var(--pve-border-color);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 2px;
+}
+
+.modal-header-bar {
+    height: 32px;
+    background-color: var(--pve-modal-header-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+}
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.modal-content-area {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--pve-modal-text);
+}
+
+.modal-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-form-row label {
+    color: var(--pve-text-light);
+    font-weight: 600;
+}
+
+.modal-form-row select, .modal-form-row input {
+    height: 28px;
+    background-color: var(--pve-input-bg);
+    border: 1px solid var(--pve-input-border);
+    border-radius: 2px;
+    color: var(--pve-input-text);
+    padding: 0 8px;
+    font-size: 12px;
+    outline: none;
+}
+
+.modal-form-row select:focus, .modal-form-row input:focus {
+    border-color: var(--pve-active-blue);
+}
+
+.modal-tip-box {
+    background-color: var(--pve-panel-bg);
+    border-left: 3px solid var(--pve-primary-orange);
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--pve-text-muted);
+    line-height: 1.5;
+}
+
+.modal-footer-bar {
+    height: 38px;
+    background-color: var(--pve-panel-bg);
+    border-top: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 12px;
+    gap: 8px;
+}
+
+.spin-anim {
+    display: inline-block;
+    animation: pve-spin 1s linear infinite;
+}
+
+@keyframes pve-spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Message Center Drawer & Header Badge Styles (Requirement 2)
+   ========================================================================== */
+.pve-msg-badge {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background-color: #dc3545;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 16px;
+    text-align: center;
+    padding: 0 4px;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+.pve-drawer {
+    position: fixed;
+    top: 38px;
+    right: 0;
+    bottom: 0;
+    width: 390px;
+    max-width: 90vw;
+    background-color: var(--pve-panel-bg);
+    border-left: 1px solid var(--pve-border-color);
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.35);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlideIn 0.2s ease-out;
+}
+
+@keyframes drawerSlideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.pve-drawer-header {
+    height: 38px;
+    background-color: var(--pve-bottom-header);
+    border-bottom: 1px solid var(--pve-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--pve-text-light);
+    flex-shrink: 0;
+}
+
+.pve-drawer-tabs {
+    display: flex;
+    background-color: var(--pve-panel-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    padding: 6px 8px;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.drawer-tab {
+    flex: 1;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 11.5px;
+    color: var(--pve-text-muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+
+.drawer-tab:hover {
+    color: var(--pve-text-light);
+    background-color: var(--pve-hover-bg);
+}
+
+.drawer-tab.active {
+    color: var(--pve-text-light);
+    background-color: var(--pve-card-bg);
+    border-color: var(--pve-border-color);
+    font-weight: bold;
+}
+
+.pve-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.msg-card {
+    background-color: var(--pve-card-bg);
+    border: 1px solid var(--pve-border-color);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.15s;
+}
+
+.msg-card.border-in-progress {
+    border-left: 4px solid #007acc;
+}
+
+.msg-card.border-success {
+    border-left: 4px solid #28a745;
+}
+
+.msg-card.border-warning {
+    border-left: 4px solid #e67e22;
+    background-color: rgba(230, 126, 34, 0.05);
+}
+
+.msg-card.border-error {
+    border-left: 4px solid #dc3545;
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.msg-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.msg-card-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--pve-text-light);
+}
+
+.msg-action-tag {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 2px;
+    background-color: var(--pve-tag-default-bg);
+    color: var(--pve-text-light);
+    font-size: 10.5px;
+    font-weight: bold;
+}
+
+.msg-time {
+    font-size: 10.5px;
+    color: var(--pve-text-muted);
+}
+
+.msg-card-body {
+    font-size: 11.5px;
+    color: var(--pve-text-normal);
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.msg-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    padding: 1px 6px;
+    border-radius: 10px;
+}
+
+.msg-status-pill.in-progress {
+    background-color: rgba(0, 122, 204, 0.15);
+    color: #007acc;
+}
+
+.msg-status-pill.success {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+}
+
+.msg-status-pill.warning {
+    background-color: rgba(230, 126, 34, 0.2);
+    color: #e67e22;
+    font-weight: bold;
+}
+
+.msg-status-pill.error {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Metadata row showing operator & origin/target node */
+.msg-card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--pve-text-muted);
+    background-color: rgba(0, 0, 0, 0.12);
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin: 4px 0 6px 0;
+    line-height: 1.4;
+}
+
+[data-theme="light"] .msg-card-meta {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.msg-card-meta .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.msg-card-meta .meta-item strong {
+    color: var(--pve-text-light);
+    font-weight: 600;
+}
+
+.msg-card-meta .meta-sep {
+    color: var(--pve-border-color);
+}
+
+.msg-card-meta .meta-arrow {
+    color: var(--pve-primary-orange);
+    font-weight: bold;
+}
+
+.msg-header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Individual message delete button */
+.btn-msg-delete {
+    background: none;
+    border: none;
+    color: var(--pve-text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 5px;
+    margin-left: 2px;
+    line-height: 1;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+    opacity: 0.65;
+}
+
+.btn-msg-delete:hover {
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.15);
+    opacity: 1;
+}
+
+.msg-node-tag {
+    font-size: 10.5px;
+    color: var(--pve-text-muted);
+    font-weight: normal;
+}
+
+/* =========================================================================
+   Operation Audit History Styles (Permanent Server Audit Trail)
+   ========================================================================= */
+.pve-modal-history {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    backdrop-filter: blur(1px);
+}
+
+.history-dialog {
+    background-color: var(--pve-panel-bg);
+    border: 1px solid var(--pve-border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    border-radius: 4px;
+    width: 94%;
+    max-width: 1080px;
+    height: 82vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.history-header {
+    background-color: var(--pve-header-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.history-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pve-text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-close-btn {
+    background: none;
+    border: none;
+    color: var(--pve-text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: all 0.15s;
+}
+
+.history-close-btn:hover {
+    color: #ff4d4f;
+    background-color: rgba(255, 77, 79, 0.15);
+}
+
+.history-toolbar {
+    background-color: var(--pve-tree-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.history-search-input {
+    background-color: var(--pve-panel-bg);
+    border: 1px solid var(--pve-btn-border);
+    color: var(--pve-text-light);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    min-width: 220px;
+    outline: none;
+}
+
+.history-search-input:focus {
+    border-color: #3498db;
+}
+
+.history-select {
+    background-color: var(--pve-panel-bg);
+    border: 1px solid var(--pve-btn-border);
+    color: var(--pve-text-light);
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    outline: none;
+}
+
+.user-permission-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11.5px;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.user-permission-pill.root {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+[data-theme="dark"] .user-permission-pill.root {
+    color: #2ecc71;
+}
+
+.user-permission-pill.non-root {
+    background-color: rgba(230, 126, 34, 0.15);
+    color: #d35400;
+    border: 1px solid rgba(230, 126, 34, 0.3);
+}
+
+[data-theme="dark"] .user-permission-pill.non-root {
+    color: #e67e22;
+}
+
+.history-table-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.history-table th {
+    background-color: var(--pve-header-bg);
+    color: var(--pve-text-light);
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--pve-border-color);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+}
+
+.history-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--pve-border-color);
+    color: var(--pve-text-light);
+    white-space: nowrap;
+}
+
+.history-table tr:hover {
+    background-color: var(--pve-tree-hover);
+}
+
+.history-status-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.history-status-badge.ok {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+[data-theme="dark"] .history-status-badge.ok {
+    color: #2ecc71;
+}
+
+.history-status-badge.warn {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: #d35400;
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+[data-theme="dark"] .history-status-badge.warn {
+    color: #f39c12;
+}
+
+.history-status-badge.error {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+[data-theme="dark"] .history-status-badge.error {
+    color: #e74c3c;
+}
+
+.btn-history-del {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--pve-text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: all 0.15s;
+}
+
+.btn-history-del:hover:not(:disabled) {
+    color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.15);
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.btn-history-del:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Bottom Console Tab Navigation */
+.console-tabs {
+    display: flex;
+    align-items: center;
+    background-color: var(--pve-header-bg);
+    border-bottom: 1px solid var(--pve-border-color);
+    padding: 0 8px;
+    gap: 4px;
+}
+
+.console-tab {
+    padding: 6px 14px;
+    font-size: 11.5px;
+    color: var(--pve-text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.console-tab:hover {
+    color: var(--pve-text-light);
+}
+
+.console-tab.active {
+    color: var(--pve-primary-orange);
+    border-bottom-color: var(--pve-primary-orange);
+    font-weight: 600;
+}

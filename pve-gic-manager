@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""
+CLI entry point for pve-gic-manager
+"""
+import sys
+import os
+
+# Add package directory to python path
+pkg_dir = "/usr/share/pve-gic-manager"
+if os.path.exists(pkg_dir) and pkg_dir not in sys.path:
+    sys.path.insert(0, pkg_dir)
+
+from pve_gic_manager.main import main
+
+if __name__ == "__main__":
+    main()

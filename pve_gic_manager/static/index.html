@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxmox VE - ARM64 虚拟机 GIC 中断管理系统</title>
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/pve-theme.css?v=20261123_01">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><polygon points=%2220,10 40,10 80,90 60,90%22 fill=%22%23e57000%22/><polygon points=%2280,10 60,10 20,90 40,90%22 fill=%22%23e57000%22/></svg>">
+</head>
+<body>
+    <!-- Top Header (PVE 9 Dark / Light Top Bar) -->
+    <header class="pve-top-header">
+        <div class="pve-brand-area">
+            <!-- Proxmox Official Vector Logo X (Requirement 1) -->
+            <svg class="pve-brand-logo-svg" viewBox="0 0 100 100" fill="#e57000">
+                <polygon points="12,12 36,12 88,88 64,88" />
+                <polygon points="88,12 64,12 12,88 36,88" />
+            </svg>
+            <span class="pve-brand-title">PROXMOX</span>
+            <span class="pve-version-tag" id="pve-version-tag">Virtual Environment <span id="pve-version-val">{{PVE_VERSION}}</span> | GIC 管理器</span>
+        </div>
+
+        <div class="pve-header-search">
+            <input type="text" id="header-search" placeholder="全局快速搜索 (VMID / 名称 / IP)...">
+        </div>
+
+        <div class="pve-header-tools">
+            <div class="pve-api-status">
+                <span class="status-dot-green"></span>
+                <span>Node API :8004 认证连接</span>
+            </div>
+            <!-- Theme Toggle Button -->
+            <button class="pve-header-btn btn-theme-toggle" id="btn-theme-toggle" title="切换暗黑 / 白色主题">
+                <i class="fa fa-adjust" id="theme-icon"></i> <span id="theme-text">暗黑主题</span>
+            </button>
+            <!-- Operation Audit History Button (Requirement Turn 12) -->
+            <button class="pve-header-btn" id="btn-open-history" title="查看操作审计历史记录 (root具备管理删除权限)">
+                <i class="fa fa-history" style="color: #3498db;"></i>
+                <span>操作历史</span>
+            </button>
+            <!-- Message Center Button (Requirement 2) -->
+            <button class="pve-header-btn" id="btn-message-center" title="查看操作与告警消息中心" style="position: relative;">
+                <i class="fa fa-bell" id="msg-center-bell" style="color: #e57000;"></i>
+                <span>消息中心</span>
+                <span class="pve-msg-badge" id="msg-center-badge" style="display: none;">0</span>
+            </button>
+            <button class="pve-header-btn btn-sync-top" id="btn-sync-all" title="触发全节点重新扫描">
+                <i class="fa fa-refresh" id="sync-icon"></i>
+                立即扫描同步
+            </button>
+            <div class="pve-user-badge">
+                <i class="fa fa-user"></i>
+                <span id="user-display">root@pam</span>
+                <span class="btn-logout" id="btn-logout" title="注销退出登录">
+                    <i class="fa fa-power-off"></i>
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace (Focused Two-Column Architecture: Tree + GIC Grid) -->
+    <div class="pve-layout-body">
+        <!-- Left Column: Server View Tree (Resizable) -->
+        <aside class="pve-col-tree" id="pve-col-tree">
+            <div class="tree-title-bar">
+                <span>服务器视图 (Server View)</span>
+                <span class="tree-gear-btn" title="节点视图">
+                    <i class="fa fa-cog"></i>
+                </span>
+            </div>
+            <div id="pve-tree-container" class="pve-tree-scroll">
+                <!-- Dynamically loaded tree nodes -->
+                <div class="pve-tree-item tree-level-0 active" id="tree-root-item">
+                    <span class="tree-expander"><i class="fa fa-caret-down"></i></span>
+                    <i class="x-tree-icon x-tree-icon-custom fa fa-server"></i>
+                    <span><strong>数据中心 (全部节点)</strong></span>
+                </div>
+                <div id="tree-node-list">
+                    <div style="padding: 10px; color: #777;">正在加载 PVE 集群节点...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Vertical Resizable Splitter between Tree and Main Content -->
+        <div class="pve-splitter-v" id="splitter-v" title="左右拖动调整左侧树宽度，双击折叠/还原"></div>
+
+        <!-- Right Column: Dedicated GIC Management Workspace -->
+        <main class="pve-col-main" id="pve-col-main">
+            <!-- Breadcrumb Navigation Bar -->
+            <div class="pve-main-breadcrumb-bar">
+                <div class="pve-breadcrumb-title">
+                    <span id="breadcrumb-path">数据中心 > ⚡ ARM64 虚拟机 GIC 中断控制器管理</span>
+                </div>
+                <div class="pve-breadcrumb-tools">
+                    <span id="last-sync-time-label" style="font-size: 11px; color: var(--pve-text-muted);">上次扫描时间: -</span>
+                </div>
+            </div>
+
+            <!-- GIC Summary Overview Cards -->
+            <div class="pve-info-header">
+                <div class="pve-info-grid">
+                    <div class="info-card">
+                        <div class="info-card-label">当前视图</div>
+                        <div class="info-card-val" id="view-scope-label">全集群节点</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-label">虚拟机总数</div>
+                        <div class="info-card-val" id="stat-total">0</div>
+                    </div>
+                    <div class="info-card card-gicv3">
+                        <div class="info-card-label">GICv3 (运行中/正常)</div>
+                        <div class="info-card-val" id="stat-gicv3">0</div>
+                    </div>
+                    <div class="info-card card-gicv2">
+                        <div class="info-card-label">GICv2 (运行中/引导风险)</div>
+                        <div class="info-card-val" id="stat-gicv2">0</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-label">已关机状态</div>
+                        <div class="info-card-val" id="stat-stopped">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Toolbar -->
+            <div class="pve-action-toolbar">
+                <button class="pve-btn pve-btn-primary" id="btn-toolbar-sync">
+                    <i class="fa fa-refresh" id="toolbar-sync-icon"></i> 刷新扫描
+                </button>
+                <div class="pve-toolbar-sep"></div>
+                <button class="pve-btn pve-btn-power-start" id="btn-batch-power-start" disabled title="批量开机选中的虚拟机">
+                    <i class="fa fa-play" style="color: #2ecc71;"></i> 批量开机
+                </button>
+                <button class="pve-btn pve-btn-power-shutdown" id="btn-batch-power-shutdown" disabled title="批量正常关机 (发送 ACPI 信号)">
+                    <i class="fa fa-power-off" style="color: #e74c3c;"></i> 批量关机
+                </button>
+                <button class="pve-btn pve-btn-power-stop" id="btn-batch-power-stop" disabled title="批量强制停止 (断电，对无系统虚拟机有效)">
+                    <i class="fa fa-stop" style="color: #e67e22;"></i> 批量停止
+                </button>
+                <button class="pve-btn pve-btn-power-reboot" id="btn-batch-power-reboot" disabled title="批量重启选中的虚拟机">
+                    <i class="fa fa-refresh" style="color: #3498db;"></i> 批量重启
+                </button>
+                <div class="pve-toolbar-sep"></div>
+                <div class="pve-btn-group" id="group-batch-gic" title="批量变更选中虚拟机的 GIC 中断控制器">
+                    <button class="pve-btn pve-btn-segmented pve-btn-segmented-gic3" id="btn-batch-gic3" disabled title="批量设为 GICv3 (需重启生效)">
+                        <span class="btn-icon"><i class="fa fa-check"></i></span>
+                        <span class="btn-text">批量设为 GICv3</span>
+                    </button>
+                    <div class="pve-btn-group-divider"></div>
+                    <button class="pve-btn pve-btn-segmented pve-btn-segmented-gic2" id="btn-batch-gic2" disabled title="批量设为 GICv2 (需重启生效)">
+                        <span class="btn-icon"><i class="fa fa-bolt"></i></span>
+                        <span class="btn-text">批量设为 GICv2</span>
+                    </button>
+                </div>
+                <div class="pve-toolbar-sep"></div>
+                <button class="pve-btn" id="btn-batch-custom" disabled>
+                    <i class="fa fa-cog"></i> 高级配置...
+                </button>
+                <div class="pve-toolbar-sep"></div>
+                <div class="pve-search-box">
+                    <label for="table-filter" style="color: var(--pve-text-muted);"><i class="fa fa-filter"></i> 筛选:</label>
+                    <input type="text" id="table-filter" placeholder="按 VMID / 名称 / IP 过滤...">
+                </div>
+            </div>
+
+            <!-- Real-time Sync Toast Bar -->
+            <div id="sync-toast-bar" class="pve-sync-toast" style="display: none;">
+                <span id="sync-toast-text">正在自动扫描每个节点下的虚拟机...</span>
+                <span style="opacity: 0.8; font-size: 10px;">进入页面自动同步中</span>
+            </div>
+
+            <!-- GIC VM Data Grid Table (Requirement 1, 2, 3) -->
+            <div class="pve-grid-wrapper" id="pve-grid-wrapper">
+                <table class="pve-grid-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 34px; text-align: center;">
+                                <input type="checkbox" id="select-all-checkbox" title="全选 / 反选">
+                            </th>
+                            <th style="width: 135px;">PVE 节点 (Node & IP)</th>
+                            <th style="width: 48px;">ID ↑</th>
+                            <th style="width: 100px;">虚拟机名称</th>
+                            <th style="width: 72px;">运行状态</th>
+                            <th style="width: 115px;">虚拟机真实 IP</th>
+                            <th style="width: 95px;">架构 / 规格</th>
+                            <th style="width: 90px;">配置 GIC</th>
+                            <th style="width: 105px;">实际中断 GIC (Active)</th>
+                            <th style="width: 216px; text-align: center;">电源与中断操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vm-table-body">
+                        <tr>
+                            <td colspan="10" style="text-align: center; color: var(--pve-text-muted); padding: 30px;">
+                                正在自动连接集群并读取虚拟机列表...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Horizontal Resizable Splitter between Grid and Console -->
+            <div class="pve-splitter-h" id="splitter-h" title="上下拖动调整控制台高度，双击折叠/还原"></div>
+
+            <!-- Bottom Console (Task Execution History) -->
+            <div class="pve-bottom-console" id="pve-bottom-console">
+                <div class="console-tabs">
+                    <div class="console-tab active" id="tab-console-tasks"><i class="fa fa-tasks"></i> 中断管理任务日志 (GIC Tasks)</div>
+                    <div class="console-tab" id="tab-console-history"><i class="fa fa-history"></i> 操作审计历史 (Audit History)</div>
+                    <button class="console-toggle-btn" id="btn-toggle-console" title="折叠/展开控制台">
+                        <i class="fa fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="console-body" id="console-tasks-view">
+                    <table class="console-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">时间 ↓</th>
+                                <th style="width: 100px;">节点</th>
+                                <th style="width: 100px;">用户</th>
+                                <th>操作任务描述</th>
+                                <th style="width: 80px;">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-log-body">
+                            <!-- Dynamically populated tasks -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="console-body" id="console-history-view" style="display: none;">
+                    <table class="console-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">时间 ↓</th>
+                                <th style="width: 100px;">操作用户</th>
+                                <th style="width: 140px;">发起节点 → 目标</th>
+                                <th style="width: 110px;">虚拟机</th>
+                                <th style="width: 150px;">操作类型</th>
+                                <th style="width: 80px;">状态</th>
+                                <th>执行详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="console-history-body">
+                            <!-- Dynamically populated audit history -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Proxmox Signature Watermark -->
+                <svg class="console-watermark" viewBox="0 0 100 100" fill="#e57000">
+                    <path d="M50 0 L100 25 L100 75 L50 100 L0 75 L0 25 Z" fill-opacity="0.2"/>
+                    <path d="M25 35 L75 35 L50 75 Z" fill="#e57000"/>
+                </svg>
+            </div>
+        </main>
+    </div>
+
+    <!-- Official PVE Login Window Modal (Requirement 4) -->
+    <div id="pve-login-modal" class="pve-login-mask" style="display: none;">
+        <div class="pve-login-window">
+            <div class="login-header-bar">
+                <svg viewBox="0 0 100 100" width="18" height="18" fill="#e57000">
+                    <polygon points="12,12 36,12 88,88 64,88" />
+                    <polygon points="88,12 64,12 12,88 36,88" />
+                </svg>
+                <span>Proxmox VE 登录</span>
+            </div>
+            <form id="pve-login-form">
+                <div class="login-content-area">
+                    <div class="login-form-row">
+                        <label for="login-username">用户名:</label>
+                        <input type="text" id="login-username" value="root" required autocomplete="username">
+                    </div>
+                    <div class="login-form-row">
+                        <label for="login-password">密码:</label>
+                        <input type="password" id="login-password" required autocomplete="current-password" autofocus>
+                    </div>
+                    <div class="login-form-row">
+                        <label for="login-realm">领域:</label>
+                        <select id="login-realm">
+                            <option value="pam" selected>Linux PAM standard authentication</option>
+                            <option value="pve">Proxmox VE authentication server</option>
+                        </select>
+                    </div>
+                    <div class="login-form-row">
+                        <label for="login-language">语言:</label>
+                        <select id="login-language">
+                            <option value="zh_CN" selected>中文 (简体)</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="login-error-msg" id="login-error"></div>
+                </div>
+                <div class="login-footer-bar">
+                    <button type="submit" class="btn-login-submit" id="btn-login-submit">登录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ExtJS Style GIC Modal Window -->
+    <div id="gic-modal" class="pve-modal-mask">
+        <div class="pve-modal-window">
+            <div class="modal-header-bar">
+                <span id="modal-title">虚拟机中断控制器配置 (GIC)</span>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-content-area">
+                <p id="modal-desc" style="color: var(--pve-text-muted);">配置虚拟机硬件中断控制器版本：</p>
+                <div class="modal-form-row">
+                    <label for="modal-gic-select">GIC 版本 (gic-version):</label>
+                    <select id="modal-gic-select">
+                        <option value="3">GICv3 (推荐: 彻底解决 ARM64 4/8核虚拟机启动卡Logo问题)</option>
+                        <option value="2">GICv2 (旧版本: <=8核默认选项，ARM64下易卡在固件)</option>
+                        <option value="host">host (按宿主机 KVM 提供的最高版本)</option>
+                        <option value="max">max (选择加速器最高可用版本)</option>
+                        <option value="default">系统默认 (清除覆盖，按QEMU默认策略)</option>
+                    </select>
+                </div>
+                <div class="modal-tip-box">
+                    <strong>⚠️ 注意事项：</strong><br>
+                    • GIC 属于底层的机器硬件参数，修改配置后<b>必须将虚拟机完全停止并重新开机</b>生效（重启热切换不生效）。<br>
+                    • 在 ARM64 宿主机（如飞腾、鲲鹏）上，未指定 GIC 时 4 核虚拟机可能默认协商为 GICv2 并卡在固件 Logo，显式指定为 <b>GICv3</b> 能立即正常引导。
+                </div>
+            </div>
+            <div class="modal-footer-bar">
+                <button class="pve-btn modal-cancel-btn">取消</button>
+                <button class="pve-btn pve-btn-primary" id="btn-modal-confirm">确定并保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Power Action Confirmation Modal (Requirement 4) -->
+    <div id="power-confirm-modal" class="pve-modal-mask" style="display: none;">
+        <div class="pve-modal-window" style="max-width: 440px;">
+            <div class="modal-header-bar">
+                <span id="power-modal-title"><i class="fa fa-question-circle"></i> 确认电源操作</span>
+                <button class="modal-close-btn power-modal-cancel">&times;</button>
+            </div>
+            <div class="modal-content-area" style="padding: 16px 20px;">
+                <div style="display: flex; align-items: flex-start; gap: 14px;">
+                    <div id="power-modal-icon" style="font-size: 26px; line-height: 1; margin-top: 2px;">
+                        <i class="fa fa-exclamation-triangle" style="color: #e57000;"></i>
+                    </div>
+                    <div>
+                        <div id="power-modal-message" style="font-size: 13px; font-weight: 600; color: var(--pve-text-light); line-height: 1.5;">
+                            确定要执行操作吗？
+                        </div>
+                        <div id="power-modal-sub" style="font-size: 11.5px; color: var(--pve-text-muted); margin-top: 6px; line-height: 1.4;">
+                            提示：GIC 中断配置修改后，需完全关机后再开机生效。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-bar">
+                <button class="pve-btn power-modal-cancel">取消</button>
+                <button class="pve-btn pve-btn-primary" id="btn-power-modal-confirm">确定执行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggest Force Stop Modal (Requirement 2: When guest has no OS / ACPI fails) -->
+    <div id="suggest-stop-modal" class="pve-modal-mask" style="display: none;">
+        <div class="pve-modal-window" style="max-width: 500px;">
+            <div class="modal-header-bar" style="background-color: #bd2130;">
+                <span id="suggest-stop-title" style="color: #ffffff; font-weight: 600;"><i class="fa fa-exclamation-triangle"></i> 虚拟机正常关机未响应提示</span>
+                <button class="modal-close-btn suggest-stop-cancel" style="color: #ffffff;">&times;</button>
+            </div>
+            <div class="modal-content-area" style="padding: 16px 20px;">
+                <div style="display: flex; align-items: flex-start; gap: 14px;">
+                    <div style="font-size: 28px; line-height: 1; color: #e67e22; margin-top: 2px;">
+                        <i class="fa fa-info-circle"></i>
+                    </div>
+                    <div>
+                        <div id="suggest-stop-message" style="font-size: 13px; font-weight: 600; color: var(--pve-text-light); line-height: 1.5;">
+                            虚拟机 VM 101 关机未响应
+                        </div>
+                        <div id="suggest-stop-reason" style="font-size: 12px; color: var(--pve-text-normal); margin-top: 8px; line-height: 1.5; background: var(--pve-table-row-alt); padding: 8px 10px; border-left: 3px solid #e67e22; border-radius: 2px;">
+                            <strong>根因分析：</strong>该虚拟机尚未安装操作系统（或处于系统安装向导/BIOS菜单界面），未运行 ACPI 电源服务，因此无法响应软关机信号。
+                        </div>
+                        <div style="font-size: 12px; color: var(--pve-text-muted); margin-top: 8px; line-height: 1.4;">
+                            <strong>解决办法：</strong>请点击下方【立即强制停止】直接切断电源关机，此操作对未安装系统的虚拟机立竿见影。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-bar">
+                <button class="pve-btn suggest-stop-cancel">取消并关闭</button>
+                <button class="pve-btn pve-btn-power-stop" id="btn-suggest-stop-confirm" style="background-color: #d35400; color: #ffffff; border-color: #ba4a00; font-weight: bold; min-width: 140px;">
+                    <i class="fa fa-stop"></i> 立即强制停止 (推荐)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Center Drawer (Requirement 2: 消息与告警中心抽屉面板) -->
+    <div id="message-center-drawer" class="pve-drawer" style="display: none;">
+        <div class="pve-drawer-header">
+            <div class="drawer-title" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa fa-bell" style="color: #e57000;"></i>
+                <span>消息中心 (Message Center)</span>
+            </div>
+            <div class="drawer-actions" style="display: flex; align-items: center; gap: 8px;">
+                <button class="pve-btn pve-btn-xs" id="btn-clear-messages" title="清空临时消息通知" style="height: 20px; font-size: 11px; padding: 0 6px;">清空消息</button>
+                <button class="pve-drawer-close" id="btn-close-msg-drawer" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--pve-text-muted);">&times;</button>
+            </div>
+        </div>
+        <div class="pve-drawer-tabs">
+            <button class="drawer-tab active" data-filter="all" id="tab-msg-all">全部操作 (<span id="msg-all-count">0</span>)</button>
+            <button class="drawer-tab" data-filter="exceptions" id="tab-msg-exceptions">仅异常/告警 (<span id="msg-exception-count">0</span>)</button>
+        </div>
+        <div class="pve-drawer-body" id="message-center-list">
+            <div class="empty-msg-notice" style="text-align: center; color: var(--pve-text-muted); padding: 30px 10px; font-size: 12px;">
+                <i class="fa fa-inbox fa-2x" style="opacity: 0.5; margin-bottom: 8px; display: block;"></i>
+                暂无操作或告警消息
+            </div>
+        </div>
+    </div>
+
+    <!-- Operation Audit History Modal Dialog (Requirement Turn 12) -->
+    <div class="pve-modal-history" id="history-modal" style="display: none;">
+        <div class="history-dialog">
+            <div class="history-header">
+                <h3><i class="fa fa-history" style="color: #3498db;"></i> 虚拟机中断与电源操作审计历史</h3>
+                <button class="history-close-btn" id="btn-close-history-modal" title="关闭窗口">&times;</button>
+            </div>
+            <div class="history-toolbar">
+                <input type="text" class="history-search-input" id="history-filter" placeholder="搜索虚拟机、节点、操作、用户...">
+                <select class="history-select" id="history-status-filter">
+                    <option value="all">全部状态</option>
+                    <option value="OK">成功 (OK)</option>
+                    <option value="WARN">警告 (WARN)</option>
+                    <option value="ERROR">失败 (ERROR)</option>
+                </select>
+                <button class="pve-btn" id="btn-refresh-history" title="从服务器刷新最新审计历史">
+                    <i class="fa fa-refresh"></i> 刷新
+                </button>
+                <button class="pve-btn" id="btn-clear-all-history" style="color: #e74c3c;" title="清空全部操作历史记录 (仅 root 用户可用)">
+                    <i class="fa fa-trash"></i> 清空全部历史
+                </button>
+                <div class="user-permission-pill root" id="history-user-pill">
+                    <i class="fa fa-user-shield"></i> <span id="history-user-text">当前用户: root@pam (超级管理员)</span>
+                </div>
+            </div>
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;">时间 ↓</th>
+                            <th style="width: 100px;">操作用户</th>
+                            <th style="width: 140px;">发起节点 → 目标</th>
+                            <th style="width: 110px;">虚拟机</th>
+                            <th style="width: 140px;">操作类型</th>
+                            <th style="width: 80px;">状态</th>
+                            <th>执行详情</th>
+                            <th style="width: 60px; text-align: center;">管理</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/pve-gic-app.js?v=20261123_04"></script>
+</body>
+</html>
