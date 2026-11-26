@@ -32,6 +32,34 @@ class PVEScanner:
         self.last_arp_scan = 0
         self.cached_pve_version = None
         self.cached_pve_info = None
+        self._start_passive_arp_sniffer()
+
+    def _start_passive_arp_sniffer(self):
+        """Start persistent raw ARP sniffer thread to capture VM IPs in real time."""
+        if os.name != 'posix':
+            return
+        def _sniffer():
+            try:
+                s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0806))
+                while True:
+                    try:
+                        pkt = s.recv(2048)
+                        if len(pkt) >= 42 and pkt[12:14] == b'\x08\x06':
+                            arp = pkt[14:42]
+                            oper = struct.unpack('!H', arp[6:8])[0]
+                            if oper in (1, 2):
+                                sender_mac = ':'.join('%02x' % b for b in arp[8:14]).lower()
+                                sender_ip = socket.inet_ntoa(arp[14:18])
+                                if sender_ip and not sender_ip.startswith("0.") and not sender_ip.startswith("127.") and not sender_ip.startswith("169.254."):
+                                    with self.lock:
+                                        self.active_arp_cache[sender_mac] = sender_ip
+                    except Exception:
+                        time.sleep(0.1)
+            except Exception as e:
+                logger.debug(f"Passive ARP sniffer init error: {e}")
+
+        t = threading.Thread(target=_sniffer, daemon=True, name="arp_sniffer")
+        t.start()
 
     def get_pve_version_info(self):
         """
@@ -339,10 +367,10 @@ class PVEScanner:
                         if len(pkt) >= 42 and pkt[12:14] == b'\x08\x06':
                             arp = pkt[14:42]
                             oper = struct.unpack('!H', arp[6:8])[0]
-                            if oper == 2:
+                            if oper in (1, 2):
                                 sender_mac = ':'.join('%02x' % b for b in arp[8:14]).lower()
                                 sender_ip = socket.inet_ntoa(arp[14:18])
-                                if not sender_ip.startswith("0.") and not sender_ip.startswith("127."):
+                                if not sender_ip.startswith("0.") and not sender_ip.startswith("127.") and not sender_ip.startswith("169.254."):
                                     mac_to_ip[sender_mac] = sender_ip
                     except socket.timeout:
                         break
@@ -376,11 +404,7 @@ class PVEScanner:
 
         mac_to_ip = {}
 
-        # 1. Active probe cache (ensures VM 100 and others without Guest Agent are resolved)
-        with self.lock:
-            mac_to_ip.update(self.active_arp_cache)
-
-        # 2. /proc/net/arp
+        # 1. /proc/net/arp
         if os.path.exists("/proc/net/arp"):
             try:
                 with open("/proc/net/arp", "r", encoding="utf-8") as f:
@@ -395,7 +419,7 @@ class PVEScanner:
             except Exception:
                 pass
 
-        # 3. ip neigh
+        # 2. ip neigh
         try:
             output = subprocess.check_output(["ip", "neigh"], timeout=2).decode("utf-8")
             for line in output.splitlines():
@@ -409,6 +433,10 @@ class PVEScanner:
                             mac_to_ip[mac] = ip
         except Exception:
             pass
+
+        # 3. Active probe & real-time sniffer cache (highest priority, freshly verified on wire)
+        with self.lock:
+            mac_to_ip.update(self.active_arp_cache)
 
         return mac_to_ip
 
