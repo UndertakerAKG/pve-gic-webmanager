@@ -23,7 +23,9 @@ class PVEScanner:
         self.cached_vms = {}
         self.last_scan_time = 0
         self.local_node_name = self._detect_local_node_name()
-        self.local_node_ip = self._detect_local_node_ip()
+        self._cached_local_ip = None
+        self._last_local_ip_time = 0
+        self.cached_resolved_ips = {}
         self.watcher_thread = None
         self.watcher_running = False
         self.active_arp_cache = {}
@@ -94,9 +96,30 @@ class PVEScanner:
         except Exception:
             return "localhost"
 
+    @property
+    def local_node_ip(self):
+        """Dynamically detect current PVE node primary IP with a 3-second cache."""
+        now = time.time()
+        if not self._cached_local_ip or (now - self._last_local_ip_time > 3):
+            self._cached_local_ip = self._detect_local_node_ip()
+            self._last_local_ip_time = now
+        return self._cached_local_ip
+
     def _detect_local_node_ip(self):
-        """Detect current PVE node primary IP address."""
-        # 1. Try connecting a UDP socket to retrieve routing IP
+        """Detect current PVE node primary IP address dynamically."""
+        # 1. Try vmbr0 IP via 'ip -4 -o addr show vmbr0' (PVE standard management interface)
+        try:
+            output = subprocess.check_output(["ip", "-4", "-o", "addr", "show", "vmbr0"], timeout=1).decode("utf-8")
+            for line in output.splitlines():
+                parts = line.strip().split()
+                if len(parts) >= 4 and parts[2] == "inet":
+                    ip = parts[3].split('/')[0]
+                    if ip and not ip.startswith("127."):
+                        return ip
+        except Exception:
+            pass
+
+        # 2. Try connecting a UDP socket to retrieve routing IP
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
@@ -107,7 +130,7 @@ class PVEScanner:
         except Exception:
             pass
 
-        # 2. Try parsing vmbr0 or eth IP via 'ip -4 addr show'
+        # 3. Try parsing any non-loopback inet from 'ip -4 addr show'
         try:
             output = subprocess.check_output(["ip", "-4", "addr", "show"], timeout=2).decode("utf-8")
             for line in output.splitlines():
@@ -174,33 +197,92 @@ class PVEScanner:
         return ""
 
     def resolve_node_ip(self, node_name):
-        """Resolve node IP from Corosync, hosts, or network."""
+        """
+        Dynamically resolve PVE node IP address.
+        Prioritizes verified live connectivity on Port 8004 API.
+        """
         if node_name == self.local_node_name:
             return self.local_node_ip
 
-        # Try parsing /etc/pve/corosync.conf
+        now = time.time()
+        cached = getattr(self, 'cached_resolved_ips', {}).get(node_name)
+        if cached:
+            ip, expire_time = cached
+            if now < expire_time:
+                return ip
+
+        candidates = []
+
+        # Candidate A: Local /etc/hosts via gethostbyname
+        try:
+            h_ip = socket.gethostbyname(node_name)
+            if h_ip and not h_ip.startswith("127.") and h_ip not in candidates:
+                candidates.append(h_ip)
+        except Exception:
+            pass
+
+        # Candidate B: /etc/pve/corosync.conf ring0_addr
         corosync_conf = os.path.join(cfg.data.get("pve_cluster_dir", "/etc/pve"), "corosync.conf")
         if os.path.exists(corosync_conf):
             try:
                 with open(corosync_conf, "r", encoding="utf-8") as f:
                     content = f.read()
-                    # Look for node block with name and ring0_addr
                     blocks = re.findall(r'node\s*\{([^}]+)\}', content, re.MULTILINE)
                     for block in blocks:
                         if f"name: {node_name}" in block:
                             m = re.search(r'ring0_addr:\s*([^\s]+)', block)
                             if m:
-                                return m.group(1).strip()
+                                c_ip = m.group(1).strip()
+                                if c_ip and not c_ip.startswith("127.") and c_ip not in candidates:
+                                    candidates.append(c_ip)
             except Exception:
                 pass
 
-        # Try socket gethostbyname
+        def verify_node(ip_addr):
+            try:
+                import urllib.request
+                import json
+                url = f"http://{ip_addr}:8004/api/v1/health"
+                req = urllib.request.Request(url, headers={"User-Agent": "PVE-GIC-Discovery"})
+                with urllib.request.urlopen(req, timeout=0.8) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    if data.get("node") == node_name:
+                        return True
+            except Exception:
+                pass
+            return False
+
+        # 1. Test existing candidates
+        for cand in candidates:
+            if verify_node(cand):
+                self._cache_node_ip(node_name, cand, ttl=60)
+                return cand
+
+        # 2. If configured candidates fail (e.g. node IP changed dynamically),
+        # probe active neighbors from 'ip neigh show'
         try:
-            return socket.gethostbyname(node_name)
+            neigh_out = subprocess.check_output(["ip", "neigh", "show"], timeout=1).decode("utf-8")
+            for line in neigh_out.splitlines():
+                parts = line.strip().split()
+                if len(parts) >= 1 and "." in parts[0]:
+                    neigh_ip = parts[0]
+                    if neigh_ip not in candidates and not neigh_ip.endswith(".1"):
+                        if verify_node(neigh_ip):
+                            logger.info(f"Dynamically discovered updated IP for node {node_name}: {neigh_ip}")
+                            self._cache_node_ip(node_name, neigh_ip, ttl=60)
+                            return neigh_ip
         except Exception:
             pass
 
-        return ""
+        fallback = candidates[0] if candidates else ""
+        if fallback:
+            self._cache_node_ip(node_name, fallback, ttl=10)
+        return fallback
+
+    def _cache_node_ip(self, node_name, ip, ttl=30):
+        if not hasattr(self, 'cached_resolved_ips'):
+            self.cached_resolved_ips = {}
+        self.cached_resolved_ips[node_name] = (ip, time.time() + ttl)
 
     def refresh_active_arp(self):
         """
